@@ -360,34 +360,53 @@ def create_cifar_i_data():
 def create_celeba_data(image_path):   
     """Create dataset for celeba experiments"""
     
-    if not os.path.exists('data/celeba'):
-        os.makedirs('data/celeba')
+    if not os.path.exists(image_path):
+        os.makedirs(image_path)
     
-    feature_file = h5py.File('data/celeba/celeba.h5py', "w")
-    for filename in os.listdir(image_path):
+    feature_file = h5py.File(os.path.join(image_path, 'celeba.h5py'), "w")
+    for filename in os.listdir(os.path.join(image_path,'images')):
         feature_file.create_dataset(filename, 
-            data=np.asarray(Image.open(os.path.join(image_path, filename)).convert('RGB')))
+            data=np.asarray(Image.open(os.path.join(image_path, 'images', filename)).convert('RGB')))
     feature_file.close()
+
+    with open(os.path.join(image_path, 'Anno/identity_CelebA.txt'), 'r') as f:
+        split_lines = f.readlines()
+
+    identity_dict = {}
+    for i, line in enumerate(split_lines):
+        line = line.strip().split()
+        key = line[0]
+        attr = int(line[1])
+        identity_dict[key] = attr
+
+    with open(os.path.join(image_path, 'identity_dict'), 'wb') as f:
+        pickle.dump(identity_dict, f)
     
-    with open('data/celeba/Anno/list_attr_celeba.txt', 'r') as f:
+    with open(os.path.join(image_path, 'Anno/list_attr_celeba.txt'), 'r') as f:
         lines = f.readlines()
         
     attr_list = lines[1].strip().split()
     attr_idx_dict = {attr: i for i, attr in enumerate(attr_list)}
     labels_dict = {}
+    gender_dict = {}
     for line in lines[2:]:
         line = line.strip().split()
         key = line[0]
         attr = line[1:]
-        attr.append(attr.pop(attr_idx_dict['Male']))
+        gender = attr.pop(attr_idx_dict['Male'])
+        gender_dict[key] = gender
+        attr.append(gender) # male attribute will be the last one
         attr = np.array(attr).astype(int)
         attr = (attr + 1) / 2
         labels_dict[key] = attr.copy()
         
-    with open('data/celeba/labels_dict', 'wb') as f:
+    with open(os.path.join(image_path, 'labels_dict'), 'wb') as f:
         pickle.dump(labels_dict, f)
+
+    with open(os.path.join(image_path, 'gender_dict'), 'wb') as f:
+        pickle.dump(gender_dict, f)
     
-    with open('data/celeba/Eval/list_eval_partition.txt', 'r') as f:
+    with open(os.path.join(image_path, 'Eval/list_eval_partition.txt'), 'r') as f:
         split_lines = f.readlines()
         
     train_list = []
@@ -405,15 +424,15 @@ def create_celeba_data(image_path):
             print('error')
             break
             
-    with open('data/celeba/train_key_list', 'wb') as f:
+    with open(os.path.join(image_path, 'train_key_list'), 'wb') as f:
         pickle.dump(train_list, f)
-    with open('data/celeba/dev_key_list', 'wb') as f:
+    with open(os.path.join(image_path, 'dev_key_list'), 'wb') as f:
         pickle.dump(dev_list, f)
-    with open('data/celeba/test_key_list', 'wb') as f:
+    with open(os.path.join(image_path, 'test_key_list'), 'wb') as f:
         pickle.dump(test_list, f)
     
     subclass_idx = list(set(range(39)) - {0,16,21,29,37})
-    with open('data/celeba/subclass_idx', 'wb') as f:
+    with open(os.path.join(image_path, 'subclass_idx'), 'wb') as f:
         pickle.dump(subclass_idx, f)
 
 def create_cifars_domain_label(data_folder):
@@ -436,7 +455,7 @@ if __name__ == '__main__':
     # print('Preparing cifar experiment data')
     # create_cifar_data()
     print('Preparing celeba experiment data')
-    create_celeba_data('./data/celeba/images')
+    create_celeba_data('./data/debug')
     print('Finshed')
 
     
