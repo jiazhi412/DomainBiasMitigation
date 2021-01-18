@@ -52,7 +52,7 @@ def collect_args():
                                  'celeba_gradproj_adv',    
                                 ], type=str, default='celeba_baseline')
 
-    parser.add_argument('--no_cuda', dest='cuda', action='store_true')
+    parser.add_argument('--with_cuda', dest='cuda', action='store_true')
     parser.add_argument('--random_seed', type=int, default=0)
 
     opt = vars(parser.parse_args())
