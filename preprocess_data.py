@@ -455,7 +455,7 @@ if __name__ == '__main__':
     # print('Preparing cifar experiment data')
     # create_cifar_data()
     print('Preparing celeba experiment data')
-    create_celeba_data('./data/debug')
+    create_celeba_data('./data/celeba')
     print('Finshed')
 
     
