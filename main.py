@@ -4,7 +4,7 @@ import utils
 def main(model, opt):
     utils.set_random_seed(opt['random_seed'])
     
-    if not opt['test_mode']:
+    if opt['mode'] == 'train':
         for epoch in range(opt['total_epochs']):
             model.train()
     

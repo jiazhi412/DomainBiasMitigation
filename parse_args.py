@@ -6,71 +6,71 @@ import utils
 
 def collect_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--experiment', 
+    parser.add_argument('--experiment',
                         choices=[
                                  'cifar_color', # train on color images
                                  'cifar_gray', # train on gray images
-                                 
-                                 # cifar10-s color vs gray 
-                                 'cifar-s_baseline', 
+
+                                 # cifar10-s color vs gray
+                                 'cifar-s_baseline',
                                  'cifar-s_sampling',
                                  'cifar-s_domain_discriminative',
                                  'cifar-s_domain_independent',
                                  'cifar-s_uniconf_adv',
                                  'cifar-s_gradproj_adv',
-                                 
+
                                  # cifar10-s cifar vs imagenet
-                                 'cifar-i_baseline', 
+                                 'cifar-i_baseline',
                                  'cifar-i_sampling',
                                  'cifar-i_domain_discriminative',
                                  'cifar-i_domain_independent',
-                                 
+
                                  # cifar10-s cifar vs 28 crop
                                  'cifar-c_28_baseline',
                                  'cifar-c_28_sampling',
                                  'cifar-c_28_domain_discriminative',
                                  'cifar-c_28_domain_independent',
-                                 
+
                                  #cifar10-s cifar vs 16 downres
                                  'cifar-d_16_baseline',
                                  'cifar-d_16_sampling',
                                  'cifar-d_16_domain_discriminative',
                                  'cifar-d_16_domain_independent',
-                                 
+
                                  #cifar10-s cifar vs 8 downres
                                  'cifar-d_8_baseline',
                                  'cifar-d_8_sampling',
                                  'cifar-d_8_domain_discriminative',
                                  'cifar-d_8_domain_independent',
-                                 
-                                 # celeba 
-                                 'celeba_baseline', 
+
+                                 # celeba
+                                 'celeba_baseline',
                                  'celeba_weighting',
                                  'celeba_domain_discriminative',
                                  'celeba_domain_independent',
                                  'celeba_uniconf_adv',
-                                 'celeba_gradproj_adv',    
+                                 'celeba_gradproj_adv',
                                 ], type=str, default='celeba_baseline')
 
+    parser.add_argument('--experiment-name', type=str, default='debug', help='specifies a name to this experiment for saving the model and result)')
     parser.add_argument('--with_cuda', dest='cuda', action='store_true')
     parser.add_argument('--random_seed', type=int, default=0)
+    parser.add_argument('--mode', choices=['train', 'test'], type=str, default='train')
 
     opt = vars(parser.parse_args())
     opt = create_experiment_setting(opt)
     return opt
 
 def create_experiment_setting(opt):
-    opt['test_mode'] = False
-    
     # common experiment setting
     if opt['experiment'].startswith('cifar'):
         opt['device'] = torch.device('cuda' if opt['cuda'] else 'cpu')
         opt['print_freq'] = 50
         opt['batch_size'] = 128
         opt['total_epochs'] = 200
-        opt['save_folder'] = os.path.join('record', opt['experiment'])
+        opt['save_folder'] = os.path.join('record', opt['experiment'], opt['experiment_name'])
         utils.creat_folder(opt['save_folder'])
-    
+
         optimizer_setting = {
             'optimizer': torch.optim.SGD,
             'lr': 0.1,
@@ -78,16 +78,16 @@ def create_experiment_setting(opt):
             'weight_decay': 5e-4,
         }
         opt['optimizer_setting'] = optimizer_setting
-        
+
     elif opt['experiment'].startswith('celeba'):
         opt['device'] = torch.device('cuda' if opt['cuda'] else 'cpu')
         opt['print_freq'] = 50
         opt['batch_size'] = 32
         opt['total_epochs'] = 50
-        opt['save_folder'] = os.path.join('record', opt['experiment'])
+        opt['save_folder'] = os.path.join('record', opt['experiment'], opt['experiment_name'])
         utils.creat_folder(opt['save_folder'])
         opt['output_dim'] = 39
-        
+
         optimizer_setting = {
             'optimizer': torch.optim.Adam,
             'lr': 1e-4,
@@ -105,7 +105,7 @@ def create_experiment_setting(opt):
             'augment': True
         }
         opt['data_setting'] = data_setting
-    
+
     # experiment-specific setting
     if opt['experiment'] == 'cifar_color':
         opt['output_dim'] = 10
@@ -119,7 +119,7 @@ def create_experiment_setting(opt):
         }
         opt['data_setting'] = data_setting
         model = models.cifar_core.CifarModel(opt)
-        
+
     elif opt['experiment'] == 'cifar_gray':
         opt['output_dim'] = 10
         data_setting = {
@@ -132,9 +132,9 @@ def create_experiment_setting(opt):
         }
         opt['data_setting'] = data_setting
         model = models.cifar_core.CifarModel(opt)
-        
+
     ############ cifar color vs gray ##############
-    
+
     elif opt['experiment'] == 'cifar-s_baseline':
         opt['output_dim'] = 10
         data_setting = {
@@ -147,7 +147,7 @@ def create_experiment_setting(opt):
         }
         opt['data_setting'] = data_setting
         model = models.cifar_core.CifarModel(opt)
-    
+
     elif opt['experiment'] == 'cifar-s_sampling':
         opt['output_dim'] = 10
         data_setting = {
@@ -160,7 +160,7 @@ def create_experiment_setting(opt):
         }
         opt['data_setting'] = data_setting
         model = models.cifar_core.CifarModel(opt)
-        
+
     elif opt['experiment'] == 'cifar-s_domain_discriminative':
         opt['output_dim'] = 20
         opt['prior_shift_weight'] = [1/5 if i%2==0 else 1/95 for i in range(10)] \
@@ -175,7 +175,7 @@ def create_experiment_setting(opt):
         }
         opt['data_setting'] = data_setting
         model = models.cifar_domain_discriminative.CifarDomainDiscriminative(opt)
-        
+
     elif opt['experiment'] == 'cifar-s_domain_independent':
         opt['output_dim'] = 20
         data_setting = {
@@ -189,13 +189,13 @@ def create_experiment_setting(opt):
         }
         opt['data_setting'] = data_setting
         model = models.cifar_domain_independent.CifarDomainIndependent(opt)
-        
+
     elif opt['experiment'] == 'cifar-s_uniconf_adv':
         opt['output_dim'] = 10
         opt['total_epochs'] = 500
         opt['training_ratio'] = 3
         opt['alpha'] = 1.
-        
+
         data_setting = {
             'train_data_path': './data/cifar-s/p95.0/train_imgs',
             'train_label_path': './data/cifar_train_labels',
@@ -206,22 +206,22 @@ def create_experiment_setting(opt):
             'augment': True
         }
         opt['data_setting'] = data_setting
-        
+
         optimizer_setting = {
             'optimizer': torch.optim.Adam,
             'lr': 1e-4,
             'weight_decay': 3e-4,
         }
         opt['optimizer_setting'] = optimizer_setting
-        
+
         model = models.cifar_uniconf_adv.CifarUniConfAdv(opt)
-        
+
     elif opt['experiment'] == 'cifar-s_gradproj_adv':
         opt['output_dim'] = 10
         opt['total_epochs'] = 500
         opt['training_ratio'] = 3
         opt['alpha'] = 1.
-        
+
         data_setting = {
             'train_data_path': './data/cifar-s/p95.0/train_imgs',
             'train_label_path': './data/cifar_train_labels',
@@ -232,18 +232,18 @@ def create_experiment_setting(opt):
             'augment': True
         }
         opt['data_setting'] = data_setting
-        
+
         optimizer_setting = {
             'optimizer': torch.optim.Adam,
             'lr': 1e-4,
             'weight_decay': 3e-4,
         }
         opt['optimizer_setting'] = optimizer_setting
-        
+
         model = models.cifar_gradproj_adv.CifarGradProjAdv(opt)
-            
+
     ############ cifar vs imagenet ##############
-    
+
     elif opt['experiment'] == 'cifar-i_baseline':
         opt['output_dim'] = 10
         data_setting = {
@@ -256,7 +256,7 @@ def create_experiment_setting(opt):
         }
         opt['data_setting'] = data_setting
         model = models.cifar_core.CifarModel(opt)
-        
+
     elif opt['experiment'] == 'cifar-i_sampling':
         opt['output_dim'] = 10
         data_setting = {
@@ -269,7 +269,7 @@ def create_experiment_setting(opt):
         }
         opt['data_setting'] = data_setting
         model = models.cifar_core.CifarModel(opt)
-                
+
     elif opt['experiment'] == 'cifar-i_domain_discriminative':
         opt['output_dim'] = 20
         opt['prior_shift_weight'] = [1/5 if i%2==0 else 1/95 for i in range(10)] \
@@ -284,7 +284,7 @@ def create_experiment_setting(opt):
         }
         opt['data_setting'] = data_setting
         model = models.cifar_domain_discriminative.CifarDomainDiscriminative(opt)
-        
+
     elif opt['experiment'] == 'cifar-i_domain_independent':
         opt['output_dim'] = 20
         data_setting = {
@@ -297,9 +297,9 @@ def create_experiment_setting(opt):
         }
         opt['data_setting'] = data_setting
         model = models.cifar_domain_independent.CifarDomainIndependent(opt)
-        
-    ############ cifar vs 28 cropped ############## 
-    
+
+    ############ cifar vs 28 cropped ##############
+
     elif opt['experiment'] == 'cifar-c_28_baseline':
         opt['output_dim'] = 10
         data_setting = {
@@ -312,7 +312,7 @@ def create_experiment_setting(opt):
         }
         opt['data_setting'] = data_setting
         model = models.cifar_core.CifarModel(opt)
-        
+
     elif opt['experiment'] == 'cifar-c_28_sampling':
         opt['output_dim'] = 10
         data_setting = {
@@ -325,7 +325,7 @@ def create_experiment_setting(opt):
         }
         opt['data_setting'] = data_setting
         model = models.cifar_core.CifarModel(opt)
-                
+
     elif opt['experiment'] == 'cifar-c_28_domain_discriminative':
         opt['output_dim'] = 20
         opt['prior_shift_weight'] = [1/5 if i%2==0 else 1/95 for i in range(10)] \
@@ -340,7 +340,7 @@ def create_experiment_setting(opt):
         }
         opt['data_setting'] = data_setting
         model = models.cifar_domain_discriminative.CifarDomainDiscriminative(opt)
-        
+
     elif opt['experiment'] == 'cifar-c_28_domain_independent':
         opt['output_dim'] = 20
         data_setting = {
@@ -353,9 +353,9 @@ def create_experiment_setting(opt):
         }
         opt['data_setting'] = data_setting
         model = models.cifar_domain_independent.CifarDomainIndependent(opt)
-    
-    ############ cifar vs 16 downres ##############   
-    
+
+    ############ cifar vs 16 downres ##############
+
     elif opt['experiment'] == 'cifar-d_16_baseline':
         opt['output_dim'] = 10
         data_setting = {
@@ -368,7 +368,7 @@ def create_experiment_setting(opt):
         }
         opt['data_setting'] = data_setting
         model = models.cifar_core.CifarModel(opt)
-        
+
     elif opt['experiment'] == 'cifar-d_16_sampling':
         opt['output_dim'] = 10
         data_setting = {
@@ -381,7 +381,7 @@ def create_experiment_setting(opt):
         }
         opt['data_setting'] = data_setting
         model = models.cifar_core.CifarModel(opt)
-                
+
     elif opt['experiment'] == 'cifar-d_16_domain_discriminative':
         opt['output_dim'] = 20
         opt['prior_shift_weight'] = [1/5 if i%2==0 else 1/95 for i in range(10)] \
@@ -396,7 +396,7 @@ def create_experiment_setting(opt):
         }
         opt['data_setting'] = data_setting
         model = models.cifar_domain_discriminative.CifarDomainDiscriminative(opt)
-        
+
     elif opt['experiment'] == 'cifar-d_16_domain_independent':
         opt['output_dim'] = 20
         data_setting = {
@@ -409,9 +409,9 @@ def create_experiment_setting(opt):
         }
         opt['data_setting'] = data_setting
         model = models.cifar_domain_independent.CifarDomainIndependent(opt)
-    
-    ############ cifar vs 8 downres ##############  
-    
+
+    ############ cifar vs 8 downres ##############
+
     elif opt['experiment'] == 'cifar-d_8_baseline':
         opt['output_dim'] = 10
         data_setting = {
@@ -424,7 +424,7 @@ def create_experiment_setting(opt):
         }
         opt['data_setting'] = data_setting
         model = models.cifar_core.CifarModel(opt)
-        
+
     elif opt['experiment'] == 'cifar-d_8_sampling':
         opt['output_dim'] = 10
         data_setting = {
@@ -437,7 +437,7 @@ def create_experiment_setting(opt):
         }
         opt['data_setting'] = data_setting
         model = models.cifar_core.CifarModel(opt)
-                
+
     elif opt['experiment'] == 'cifar-d_8_domain_discriminative':
         opt['output_dim'] = 20
         opt['prior_shift_weight'] = [1/5 if i%2==0 else 1/95 for i in range(10)] \
@@ -452,7 +452,7 @@ def create_experiment_setting(opt):
         }
         opt['data_setting'] = data_setting
         model = models.cifar_domain_discriminative.CifarDomainDiscriminative(opt)
-        
+
     elif opt['experiment'] == 'cifar-d_8_domain_independent':
         opt['output_dim'] = 20
         data_setting = {
@@ -465,31 +465,31 @@ def create_experiment_setting(opt):
         }
         opt['data_setting'] = data_setting
         model = models.cifar_domain_independent.CifarDomainIndependent(opt)
-    
-    ############ celeba ##############   
-    
+
+    ############ celeba ##############
+
     elif opt['experiment'] == 'celeba_baseline':
         model = models.celeba_core.CelebaModel(opt)
-        
+
     elif opt['experiment'] == 'celeba_weighting':
         model = models.celeba_weighting.CelebaWeighting(opt)
-        
+
     elif opt['experiment'] == 'celeba_domain_discriminative':
         opt['output_dim'] = 78
         model = models.celeba_domain_discriminative.CelebaDomainDiscriminative(opt)
-    
+
     elif opt['experiment'] == 'celeba_domain_independent':
         opt['output_dim'] = 78
         model = models.celeba_domain_independent.CelebaDomainIndependent(opt)
-    
+
     elif opt['experiment'] == 'celeba_uniconf_adv':
         opt['training_ratio'] = 3
         opt['alpha'] = 1.
         model = models.celeba_uniconf_adv.CelebaUniConfAdv(opt)
-        
+
     elif opt['experiment'] == 'celeba_gradproj_adv':
         opt['training_ratio'] = 3
         opt['alpha'] = 1.
         model = models.celeba_gradproj_adv.CelebaGradProjAdv(opt)
-        
+
     return model, opt
