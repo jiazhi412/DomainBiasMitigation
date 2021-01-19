@@ -58,8 +58,8 @@ def collect_args():
     parser.add_argument('--mode', choices=['train', 'test'], type=str, default='train')
 
     opt = vars(parser.parse_args())
-    opt = create_experiment_setting(opt)
-    return opt
+    model, opt = create_experiment_setting(opt)
+    return model, opt
 
 def create_experiment_setting(opt):
     # common experiment setting
