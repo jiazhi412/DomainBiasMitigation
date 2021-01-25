@@ -30,7 +30,10 @@ class CelebaModel():
     def set_network(self, opt):
         """Define the network"""
         
-        self.network = basenet.ResNet50(n_classes=opt['output_dim'],
+        # self.network = basenet.ResNet50(n_classes=opt['output_dim'],
+        #                                 pretrained=True,
+        #                                 dropout=opt['dropout']).to(self.device)
+        self.network = basenet.Vgg16(n_classes=opt['output_dim'],
                                         pretrained=True,
                                         dropout=opt['dropout']).to(self.device)
         

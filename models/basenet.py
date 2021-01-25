@@ -173,3 +173,21 @@ class ResNet50_base(nn.Module):
         features = self.dropout(self.relu(features))
 
         return features
+
+class Vgg16(nn.Module):
+    def __init__(self, n_classes, pretrained, hidden_size=2048, dropout=0.5):
+        super().__init__()
+        self.vgg = torchvision.models.vgg16(pretrained=pretrained)
+        self.fc = nn.Linear(1000, n_classes)
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(dropout)
+
+    def require_all_grads(self):
+        for param in self.parameters():
+            param.requires_grad = True
+
+    def forward(self, x):
+        features = self.vgg(x)
+        outputs = self.fc(self.dropout(self.relu(features)))
+
+        return outputs, features

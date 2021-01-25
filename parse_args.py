@@ -52,7 +52,7 @@ def collect_args():
                                  'celeba_gradproj_adv',
                                 ], type=str, default='celeba_baseline')
 
-    parser.add_argument('--experiment-name', type=str, default='debug', help='specifies a name to this experiment for saving the model and result)')
+    parser.add_argument('--experiment-name', type=str, default='vgg16', help='specifies a name to this experiment for saving the model and result)')
     parser.add_argument('--with_cuda', dest='cuda', action='store_true')
     parser.add_argument('--random_seed', type=int, default=0)
     parser.add_argument('--mode', choices=['train', 'test'], type=str, default='train')
