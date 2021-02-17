@@ -98,8 +98,9 @@ def create_cifar_data():
     for imbalance_p in [0.75, 0.8, 0.875, 0.9, 0.95, 0.96, 0.975, 0.98, 0.99]:
         create_cifar_s_data(train_imgs, train_labels, imbalance_p)
         
-    # Generate cifar vs imagenet data 
-    create_cifar_i_data()
+    # Generate cifar vs imagenet data
+    ############ cannot create this dataset since bugs ############ 
+    # create_cifar_i_data()
     create_cifars_domain_label('./data/cifar-s/p95.0')
     
     with open('data/cifar-s/p95.0/domain_idx', 'rb') as f:
@@ -452,10 +453,10 @@ def create_cifars_domain_label(data_folder):
         pickle.dump(domain_labels, f)
         
 if __name__ == '__main__':
-    # print('Preparing cifar experiment data')
-    # create_cifar_data()
-    print('Preparing celeba experiment data')
-    create_celeba_data('./data/celeba')
+    print('Preparing cifar experiment data')
+    create_cifar_data()
+    # print('Preparing celeba experiment data')
+    # create_celeba_data('./data/celeba')
     print('Finshed')
 
     
