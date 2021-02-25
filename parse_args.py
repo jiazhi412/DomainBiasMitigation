@@ -50,7 +50,7 @@ def collect_args():
                                  'celeba_domain_independent',
                                  'celeba_uniconf_adv',
                                  'celeba_gradproj_adv',
-                                ], type=str, default='celeba_baseline')
+                                ], type=str, default='celeba_gradproj_adv')
 
     parser.add_argument('--experiment-name', type=str, default='vgg16', help='specifies a name to this experiment for saving the model and result)')
     parser.add_argument('--with_cuda', dest='cuda', action='store_true')
@@ -83,7 +83,7 @@ def create_experiment_setting(opt):
         opt['device'] = torch.device('cuda' if opt['cuda'] else 'cpu')
         opt['print_freq'] = 50
         opt['batch_size'] = 32
-        opt['total_epochs'] = 10
+        opt['total_epochs'] = 50
         opt['save_folder'] = os.path.join('record', opt['experiment'], opt['experiment_name'])
         utils.creat_folder(opt['save_folder'])
         opt['output_dim'] = 39

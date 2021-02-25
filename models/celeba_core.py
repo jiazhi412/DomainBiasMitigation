@@ -20,7 +20,7 @@ class CelebaModel():
         self.save_path = opt['save_folder']
         self.print_freq = opt['print_freq']
         self.init_lr = opt['optimizer_setting']['lr']
-        self.log_writer = SummaryWriter(os.path.join(self.save_path, 'logfile'))
+        # self.log_writer = SummaryWriter(os.path.join(self.save_path, 'logfile'))
         
         self.set_network(opt)
         self.set_data(opt)
@@ -30,12 +30,12 @@ class CelebaModel():
     def set_network(self, opt):
         """Define the network"""
         
-        # self.network = basenet.ResNet50(n_classes=opt['output_dim'],
-        #                                 pretrained=True,
-        #                                 dropout=opt['dropout']).to(self.device)
-        self.network = basenet.Vgg16(n_classes=opt['output_dim'],
+        self.network = basenet.ResNet50(n_classes=opt['output_dim'],
                                         pretrained=True,
                                         dropout=opt['dropout']).to(self.device)
+        # self.network = basenet.Vgg16(n_classes=opt['output_dim'],
+        #                                 pretrained=True,
+        #                                 dropout=opt['dropout']).to(self.device)
         
     def forward(self, x):
         out, feature = self.network(x)

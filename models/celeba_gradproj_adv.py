@@ -78,19 +78,12 @@ class CelebaGradProjAdv(CelebaModel):
             _,predicted = domain_outputs.max(1)
             correct += predicted.eq(targets[:, -1].long()).sum().item()
             
-            # Update the domain classifier
-            domain_grad = torch.autograd.grad(domain_loss, self.domain_network.parameters(), 
-                                              retain_graph=True, allow_unused=True)
-            for param, grad in zip(self.domain_network.parameters(), domain_grad):
-                param.grad = grad
-            self.domain_optimizer.step()
-            
             # Update the main network
             if self.epoch % self.training_ratio == 0:
                 grad_from_class = torch.autograd.grad(class_loss, self.class_network.parameters(),
                                                       retain_graph=True, allow_unused=True)
-                grad_from_domain = torch.autograd.grad(domain_loss, self.class_network.parameters(),
-                                                       retain_graph=True, allow_unused=True)
+                # print(domain_loss)
+                grad_from_domain = torch.autograd.grad(domain_loss, self.class_network.parameters(), retain_graph=True, allow_unused=True)
     
                 for param, class_grad, domain_grad in zip(self.class_network.parameters(), 
                                                           grad_from_class, grad_from_domain):
@@ -103,6 +96,14 @@ class CelebaGradProjAdv(CelebaModel):
                         else:
                             param.grad = class_grad - self.alpha*domain_grad 
                 self.class_optimizer.step()
+            else:
+                # Update the domain classifier
+                domain_grad = torch.autograd.grad(domain_loss, self.domain_network.parameters(), 
+                                                retain_graph=True, allow_unused=True)
+                for param, grad in zip(self.domain_network.parameters(), domain_grad):
+                    param.grad = grad
+                self.domain_optimizer.step()
+                
 
             train_class_loss += class_loss.item()
             train_domain_loss += domain_loss.item()

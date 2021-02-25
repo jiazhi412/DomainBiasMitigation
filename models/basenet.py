@@ -141,7 +141,7 @@ class ResNet50(nn.Module):
         self.resnet = torchvision.models.resnet50(pretrained=pretrained)                
         self.resnet.fc = nn.Linear(2048, hidden_size)
         self.fc = nn.Linear(hidden_size, n_classes)
-        self.relu = nn.ReLU()
+        self.relu = nn.ReLU(inplace=False)
         self.dropout = nn.Dropout(dropout)        
 
     def require_all_grads(self):
